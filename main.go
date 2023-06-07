@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/shaurya947/gophercises-recover/middleware"
 )
 
 func main() {
@@ -11,7 +13,8 @@ func main() {
 	mux.HandleFunc("/panic/", panicDemo)
 	mux.HandleFunc("/panic-after/", panicAfterDemo)
 	mux.HandleFunc("/", hello)
-	log.Fatal(http.ListenAndServe(":3000", mux))
+	rh := middleware.NewRecoverableHandler(mux)
+	log.Fatal(http.ListenAndServe(":3000", rh))
 }
 
 func panicDemo(w http.ResponseWriter, r *http.Request) {
