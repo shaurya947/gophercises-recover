@@ -1,6 +1,9 @@
 package middleware
 
-import "net/http"
+import (
+	"log"
+	"net/http"
+)
 
 type Environment uint8
 
@@ -16,6 +19,10 @@ type RecoverableHandler struct {
 
 type option func(*RecoverableHandler)
 
+func DevEnv(rh *RecoverableHandler) {
+	rh.Environment = Dev
+}
+
 func NewRecoverableHandler(mux *http.ServeMux, opts ...option) *RecoverableHandler {
 	rh := &RecoverableHandler{ServeMux: mux}
 	for _, opt := range opts {
@@ -24,6 +31,11 @@ func NewRecoverableHandler(mux *http.ServeMux, opts ...option) *RecoverableHandl
 	return rh
 }
 
-func DevEnv(rh *RecoverableHandler) {
-	rh.Environment = Dev
+func (rh *RecoverableHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Println(r)
+		}
+	}()
+	rh.ServeMux.ServeHTTP(w, r)
 }
