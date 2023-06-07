@@ -3,6 +3,7 @@ package middleware
 import (
 	"log"
 	"net/http"
+	"runtime/debug"
 )
 
 type Environment uint8
@@ -35,6 +36,7 @@ func (rh *RecoverableHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println(r)
+			log.Println(string(debug.Stack()))
 		}
 	}()
 	rh.ServeMux.ServeHTTP(w, r)
