@@ -13,7 +13,7 @@ func main() {
 	mux.HandleFunc("/panic/", panicDemo)
 	mux.HandleFunc("/panic-after/", panicAfterDemo)
 	mux.HandleFunc("/", hello)
-	rh := middleware.NewRecoverableHandler(mux)
+	rh := middleware.NewRecoverableHandler(mux, middleware.DevEnv)
 	log.Fatal(http.ListenAndServe(":3000", rh))
 }
 

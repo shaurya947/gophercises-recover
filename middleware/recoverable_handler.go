@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"runtime/debug"
+	"strings"
 )
 
 type Environment uint8
@@ -35,8 +37,15 @@ func NewRecoverableHandler(mux *http.ServeMux, opts ...option) *RecoverableHandl
 func (rh *RecoverableHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Println(r)
-			log.Println(string(debug.Stack()))
+			errorLog := fmt.Sprintf("%+v: %s", r, string(debug.Stack()))
+			log.Println(errorLog)
+
+			var respString strings.Builder
+			respString.WriteString("Something went wrong\n")
+			if rh.Environment == Dev {
+				respString.WriteString(errorLog)
+			}
+			http.Error(w, respString.String(), http.StatusInternalServerError)
 		}
 	}()
 	rh.ServeMux.ServeHTTP(w, r)
